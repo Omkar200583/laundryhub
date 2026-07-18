@@ -77,6 +77,15 @@ const Login = () => {
     return normalized;
   }, []);
 
+  // Stores the JWT the backend issues on login/signup. Every success path
+  // below must call this — otherwise any future authenticated request
+  // (e.g. an Authorization: Bearer header) has nothing to send.
+  const storeToken = useCallback((token) => {
+    if (token) {
+      localStorage.setItem("token", token);
+    }
+  }, []);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -91,6 +100,7 @@ const Login = () => {
 
       if (response.data.success) {
         normalizeAndStoreUser(response.data.user);
+        storeToken(response.data.token);
 
         await Swal.fire({
           icon: "success",
@@ -137,6 +147,7 @@ const Login = () => {
 
       if (response.data.success) {
         normalizeAndStoreUser(response.data.user);
+        storeToken(response.data.token);
         await Swal.fire({ icon: "success", title: "Logged in!", timer: 1500, showConfirmButton: false });
         navigate("/");
         return;
@@ -171,6 +182,7 @@ const Login = () => {
 
           if (signupResponse.data.success) {
             normalizeAndStoreUser(signupResponse.data.user);
+            storeToken(signupResponse.data.token);
             await Swal.fire({ icon: "success", title: "Account Created!", timer: 1500, showConfirmButton: false });
             navigate("/");
           }
@@ -184,7 +196,7 @@ const Login = () => {
       }
       Swal.fire({ icon: "error", title: "Login Failed", text: errorMessage });
     }
-  }, [navigate, normalizeAndStoreUser]);
+  }, [navigate, normalizeAndStoreUser, storeToken]);
 
   const handleGoogleError = useCallback(() => {
     console.log('Google Login Failed');
